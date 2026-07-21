@@ -1,191 +1,117 @@
-# NYC Air Quality Analysis (2009 to 2023)
+# Coffee Shop Sales Analysis
 
-### A full analytics project on New York City's air pollution, from raw data to a live presentation
+### From a raw spreadsheet to a Power BI dashboard, and the business decision it points to
 
 **By Vamshi Aitharaju**
 
-`Excel` `Power Query` `Python` `RapidMiner` `Power BI` `Statistical Testing` `Forecasting` `Machine Learning` `Data Storytelling`
-
-![NYC Air Quality Infographic](assets/infographic.png)
-*The infographic used to lead a live 90 minute presentation for university faculty, students, and outside guests. The project earned top marks in the course.*
+`Power Query` `Data Cleaning` `Conditional Columns` `Star Schema` `Data Modeling` `Power BI` `DAX` `Dashboard Design` `Business Reporting`
 
 ---
 
 ## The Question
 
-NYC's Department of Health has published over a decade of air quality data, broken down by pollutant, season, and neighborhood. Almost nobody looks at it closely. This project set out to actually use it, and to answer three questions that matter for public health and city planning:
+I started this project with one goal: take a raw coffee shop sales dataset and turn it into an actual answer to a real business question. Not just clean charts, but a specific, defensible recommendation about where this business should focus its attention. The dataset covered orders, customers, products, locations, and payment methods across several hundred transactions. This README walks through exactly how I got from that raw file to a finished dashboard and a clear conclusion.
 
-1. Which parts of the city have the worst air quality?
-2. Does pollution change with the seasons, and if so, how much?
-3. Is the problem getting better or worse over time?
+## Chapter 1: Understanding the Data
 
-To answer these, I worked with 18,862 pollution readings across 59 community districts and 15 years, focusing on the two pollutants with the most public health relevance: **nitrogen dioxide (NO2)** and **fine particles (PM2.5)**.
+**What I did:** Before touching anything, I opened the file and just looked. I checked the number of rows, reviewed every column, and used filters to hunt for anything unusual or inconsistent.
 
-This README walks through every stage of that work: what I did, why I made each decision, and how I did it, including a mistake I caught and corrected along the way.
+**Why:** You cannot clean data you do not understand. Filtering the city column early, for example, is how I found spelling differences and extra spaces that would have quietly broken any location-based analysis later on. Catching that kind of thing before building anything is what separates a reliable analysis from a fragile one.
+
+**How:** I reviewed the dataset column by column, applying filters on text fields specifically to surface inconsistent entries. This gave me a clear list of what needed fixing before the real cleaning work began.
+
+## Chapter 2: Cleaning and Preparing the Data in Power Query
+
+This is where most of the real work happened, and where most of the value of the final dashboard actually comes from. A dashboard is only as good as the data behind it.
+
+**Trimming and standardizing text**
+Extra spaces and inconsistent spelling in fields like city names get treated as different values by Power BI even when they mean the same thing. I trimmed whitespace and standardized these entries so that every chart grouping by location would actually group correctly.
+
+**Splitting columns**
+Some fields in the raw data combined more than one piece of information into a single column. I split these into separate, usable fields so each one could be filtered and analyzed on its own, rather than being trapped inside a combined text string.
+
+**Correcting formats and decimals**
+Numeric fields like price, cost, and profit needed consistent formatting to be usable in calculations and visuals. I standardized these to a consistent number of decimal places and applied proper currency formatting with the dollar sign, so every dollar figure in the dashboard reads clearly and consistently instead of showing raw, inconsistent numbers.
+
+**Removing duplicates**
+Duplicate rows inflate totals and distort averages. I identified and removed them so every count and sum in the final analysis reflects real, distinct transactions.
+
+**Building conditional columns**
+This is where cleaning turns into actual analysis. Rather than transforming every possible column, I only built the new variables that would lead to a real insight:
+- A **customer age group** column, built from date of birth, grouping customers into segments like young professionals, working adults, and college age customers
+- A **profit margin category**, grouping each transaction into margin tiers so I could separate high-selling products from high-profit ones
+- A **drink size** field, cleaned and standardized so it could be compared consistently across every coffee type
+
+Each of these was a deliberate choice. I only built the fields that I knew would support a real chart and a real conclusion, instead of transforming everything just because I could.
+
+## Chapter 3: Building the Data Model
+
+**What I did:** I split the cleaned dataset into three related tables: Orders, Customers, and Products.
+
+**Why:** A single flat table with everything crammed into it is hard to model and slow to filter. Splitting the data into proper subject-based tables, each with its own primary key, is the standard way to build something Power BI can actually use efficiently, and it mirrors how real business data is usually structured.
+
+**How:** I added primary keys to each table and built relationships connecting them. That structure became a proper star schema in Power BI, the foundation every chart and filter in the final dashboard is built on top of.
+
+## Chapter 4: The Dashboard, Chart by Chart
+
+**1. Profit and Sales by Product Type**
+
+<img src="assets/chart1_profit_by_product_type.png" width="600"/>
+
+Basic drinks produced the highest profit, 1.32K, which is 53.76 percent of total profit, from 1,729 sales. Premium drinks followed closely with 1,016 in profit from 1,653 sales. Affordable drinks barely registered, just 120 in profit from only 22 sales. The takeaway: a low price does not guarantee volume or profit. The business should keep its focus on basic and premium products, since together they account for almost all real value.
+
+**2. Sales Volume by Coffee Type and Order Size**
+
+<img src="assets/chart2_sales_by_coffee_order_size.png" width="600"/>
+
+Drip coffee in large size led with 30 orders. Cold brew was ordered mostly in medium size, and cappuccino mostly in small size. Adding the age group filter, built back in Chapter 2, showed that size preference actually shifts across customer segments. That is a useful detail for planning targeted upselling instead of a single generic promotion for everyone.
+
+**3. Sales Breakdown by Coffee Type and Drink Size, Filtered by Profit Margin**
+
+<img src="assets/chart3_treemap_drink_size.png" width="600"/>
+
+The most ordered combinations were not always the most profitable ones. Drip coffee in medium size and mocha in large size sold the most, but the profit margin filter showed many of these top sellers actually sit in low or medium margin tiers. Popularity and profitability are not the same thing, and this chart is the clearest proof of that in the whole analysis.
+
+**4. Daily Trends in Sales Cost, Profit, and Order Volume**
+
+<img src="assets/chart4_daily_trends.png" width="600"/>
+
+A day by day view across January. The slowest day, January 16, had just 3 orders and $17.75 in profit. The strongest day, January 12, had 19 orders and $169.50 in profit. This kind of daily pattern is directly useful for staffing decisions, promotion timing, and inventory planning.
+
+**5. Orders and Average Profit by Payment Method**
+
+<img src="assets/chart5_payment_method_profit.png" width="600"/>
+
+Gift cards produced the highest average profit per order at $8.57, ahead of cash at $7.88 across 68 orders. Google Pay had the most digital orders but the lowest average profit at $7.14. This is a clear, actionable insight. Incentivizing gift card usage could measurably raise average profit per order.
+
+**6. Sales by City and Customer Age Group**
+
+<img src="assets/chart6_sales_by_city_age.png" width="600"/>
+
+In Flagstaff, every single sale came from young professionals, totaling 760. Across nearly every city in the dataset, young professionals were the dominant customer group. That single pattern reframes the whole business strategy. Expansion planning, loyalty programs, and promotions should all be built around this group first.
+
+## Chapter 5: The Conclusion
+
+Not every high selling product is a high profit product. The real opportunity sits in the specific combinations that deliver both volume and margin at the same time. Size preference shifts by drink type and by customer age group. Payment method has a real, measurable effect on profitability. Daily and city level patterns both point back to the same underlying group.
+
+**My recommendation:** focus on young professionals, promote the drink combinations that carry the highest margin, and actively encourage gift card payments. Together, these three moves target the highest leverage segment of this business with the least wasted effort.
+
+📄 [Read the full written analysis](reports/Coffee_Shop_Sales_Analysis_Writeup.pdf) or [view the complete dashboard export](reports/Power_BI_Dashboard_Export.pdf)
 
 ---
-
-## Chapter 1: Cleaning the Data
-
-**What I did:** I took the raw DOHMH dataset, which mixed together dozens of pollutants in inconsistent formats, and narrowed it down to a clean, structured dataset built around NO2 and PM2.5.
-
-**Why:** The raw file combined many different pollutants, measurement types, and time periods in one sheet. Before any analysis could be trusted, the data needed real structure. NO2 and PM2.5 were the strongest choices because they had the most consistent measurement coverage and the clearest link to public health outcomes.
-
-**How:** I used Power Query to filter, standardize, and reshape the data. NYC air quality data can be grouped by five different geographic levels (Borough, Community District, UHF34, UHF42, and Citywide). I chose Community District because it gave the finest level of detail while still being usable for pattern analysis. I then split the cleaned data into Annual, Winter, and Summer views to support seasonal comparison later on.
-
-📄 [Read the full cleaning report](reports/01_Data_Cleaning_Report.pdf)
-
-## Chapter 2: Exploring the Data
-
-**What I did:** I ran a structured exploratory analysis across four angles: composition, comparison, relationships, and outliers.
-
-**Why:** Before building any model, I needed to understand what the data was actually showing. This step is where real patterns get separated from noise, and where bad assumptions get caught early.
-
-**How:** I built charts comparing pollutant levels by season and by year. One early idea, a bubble chart comparing all three original pollutants, didn't work: every bubble came out the same size and added nothing useful, so I dropped it. A more important finding came from a data completeness check: Ozone (O3) was only measured in the summer months, never in winter or as an annual average. Comparing it directly to NO2 and PM2.5 would have been comparing incomplete data to complete data, so I removed O3 from the year-round comparison and gave it its own dedicated summer analysis instead (more on that in Chapter 7).
-
-<img src="assets/seasonal_comparison_full.png" width="480"/> <img src="assets/yearly_trend_full.png" width="480"/>
-
-*Left: seasonal comparison across the full dataset. Right: the 15 year trend for both pollutants.*
-
-The clearest pattern to come out of this stage: NO2 spikes sharply every winter, while PM2.5 stays roughly the same all year round.
-
-📄 [Read the full EDA report](reports/02_EDA_Report.pdf)
-
-## Chapter 3: Testing the Pattern, and Fixing a Mistake
-
-**What I did:** I ran formal hypothesis tests to confirm the seasonal NO2 pattern was real, and I re-checked an earlier correlation finding that turned out to be wrong.
-
-**Why:** A pattern in a chart is not proof by itself. Hypothesis testing gives an actual statistical basis for saying a difference is real rather than random noise. Separately, when preparing this repository, I went back and rebuilt an important chart from scratch using the raw data, since I wanted every number in this project to be something I could stand behind.
-
-**How:** The winter versus summer NO2 test came back with a p value near zero, well under the standard 0.05 threshold, confirming the seasonal spike is statistically real. PM2.5 showed no significant seasonal difference (p = 0.91), matching what the charts already suggested.
-
-The correction: my original EDA report stated the correlation between NO2 and PM2.5 was almost zero (R squared around 0.006). When I rebuilt that chart directly from the underlying district level data for this repository, I got a very different result: R squared around 0.70, a real and moderately strong relationship.
-
-<img src="assets/correlation_scatter.png" width="500"/>
-
-*Rebuilt directly from the annual district level data. The two pollutants move together more than my original analysis found.*
-
-This makes sense once you think about it. Districts with more traffic and higher density tend to have elevated levels of both pollutants, since they often share the same root causes. The original low number likely came from referencing the wrong chart or the wrong data range in a large, multi sheet workbook, an easy mistake in a project this size. I'm including both numbers here on purpose, instead of quietly replacing one with the other, because catching and correcting your own error is part of doing the work properly.
-
-## Chapter 4: Forecasting with Python
-
-**What I did:** I rebuilt the seasonal hypothesis tests in Python and built a forecasting model to project both pollutants through 2027.
-
-**Why:** Getting the same result in two independent tools is a much stronger form of proof than getting it in one. Python also gave me the ability to build a proper time series forecast, which Excel could not do as cleanly.
-
-**How:** I used `scipy.stats` to rerun every hypothesis test from Chapter 3, confirming the same conclusions. I then used `statsmodels` to build an Exponential Smoothing forecast for both pollutants, complete with 95 percent confidence intervals.
-
-<table>
-<tr>
-<td><img src="assets/annual_no2_forecast.png" width="400"/></td>
-<td><img src="assets/annual_pm25_forecast.png" width="400"/></td>
-</tr>
-</table>
-
-*Real model output. Both pollutants are trending down through 2027, with NO2 improving faster than PM2.5.*
-
-Small differences between the Excel and Python forecasts turned out to come from rounding behavior between the two tools, something I confirmed by checking with a course TA. Two independent methods reaching nearly identical answers is what actually makes a forecast trustworthy.
-
-📄 [Read the full Python report](reports/03_Python_Hypothesis_Forecasting_Report.pdf) or [view the code](code/)
-
-## Chapter 5: Building Machine Learning Models
-
-**What I did:** I built three machine learning models in RapidMiner to predict pollution levels based on season, pollutant type, and district.
-
-**Why:** My first attempt was to forecast pollution by year, treating it purely as a time series problem. That model had nothing useful to say. The better question turned out to be a different one entirely: instead of asking when pollution will change, ask what actually explains it. Season, pollutant, and district turned out to be strong predictors.
-
-**How:** I built and compared three models using a 70/30 train test split.
-
-| Model | R squared | What it showed |
-|---|---|---|
-| Decision Tree (Gini Index) | 0.784 | Season is the single strongest predictor of NO2, splitting the data before anything else |
-| Random Forest (100 trees) | 0.782 | Confirmed the Decision Tree's finding with more stability across districts |
-| Linear Regression | 0.692 | A useful baseline, though pollution does not follow a purely linear pattern |
-
-<img src="assets/winter_no2_forecast.png" width="480"/>
-
-*Winter NO2, the exact variable the models flagged as most important, also shows the clearest forecasted improvement.*
-
-📄 [Read the RapidMiner report](reports/04_RapidMiner_Report.pdf), the [Decision Tree explanation](reports/04a_Decision_Tree_Explanation.pdf), or the [Random Forest explanation](reports/04b_Random_Forest_Explanation.pdf)
-
-## Chapter 6: Ranking the Districts
-
-**What I did:** I ranked all 59 community districts by average NO2 concentration.
-
-**Why:** Every method used so far, the charts, the hypothesis tests, and the machine learning models, kept pointing toward the same handful of locations. The clearest way to confirm that was to just rank them directly.
-
-**How:** I calculated average NO2 by district across the full dataset and sorted from highest to lowest.
-
-<img src="assets/district_hotspots_no2.png" width="600"/>
-
-*Midtown, Stuyvesant Town and Turtle Bay, and Clinton and Chelsea rank highest. These are the city's most dense, most trafficked areas.*
-
-## Chapter 7: Building the Interactive Dashboard
-
-**What I did:** I built a three page Power BI dashboard, with separate views for Annual, Winter, and Summer data.
-
-**Why:** A static chart shows one conclusion. A dashboard lets a user explore the data on their own terms, filter by pollutant or district or year, and find their own answers. I split it into three pages instead of one crowded page because winter and summer behave differently enough, and because summer has an extra pollutant that the other seasons don't, that combining them into a single view would have meant either losing detail or creating clutter.
-
-**How:**
-
-**Annual Dashboard**
-
-<img src="assets/dashboard_annual.png" width="800"/>
-
-The main overview page. It includes a 15 year trend line, a district by district ranking chart, a winter versus summer comparison, and a full ranked table of every district, all connected to a pollutant selector and a year range slider.
-
-**Winter Dashboard**
-
-<img src="assets/dashboard_winter.png" width="800"/>
-
-A dedicated view for winter, since that is when NO2 actually spikes. KPI cards show the key numbers immediately: average PM2.5 of 9.45, average NO2 of 25.44, and the most and least polluted districts, CD5 and CD14. A district ranking chart and a yearly trend chart sit alongside slicers for scrolling through individual districts and years.
-
-**Summer Dashboard**
-
-<img src="assets/dashboard_summer.png" width="800"/>
-
-Summer is the only season with Ozone (O3) data, which is exactly why O3 was excluded from the year round comparison back in Chapter 2 and exactly why it gets its own page here. The concentration chart shows O3 actually running higher than the other two pollutants in summer, and a treemap highlights Midtown, Clinton and Chelsea, and Greenwich Village as the summer hotspots.
-
-## Chapter 8: Presenting the Findings
-
-**What I did:** I combined every stage of this project, the cleaning, the exploration, the hypothesis tests, the forecasts, the machine learning models, the district rankings, and the dashboard, into a formal report, an eight slide presentation, and the infographic poster shown at the top of this page.
-
-**Why:** None of the analysis matters if it stays inside a spreadsheet. The goal was to make the findings usable by people who don't work with data day to day.
-
-**How:** The infographic became the anchor for a live 90 minute presentation to university faculty, students, and outside guests, walking through the findings district by district and chart by chart. The project earned top marks in the course.
-
-📄 [Read the final report](reports/05_Final_Capstone_Report.pdf) or [view the presentation slides](presentation/The-Story-of-NYCs-Air-Quality.pdf)
-
----
-
-## Key Findings
-
-- Winter drives NO2 pollution upward, most likely due to heating fuel use, higher traffic, and cold air trapping pollutants near the ground
-- PM2.5 stays roughly constant year round, making it a steady background risk rather than a seasonal spike
-- NO2 and PM2.5 are more closely related than my original analysis showed, with a real relationship (R squared around 0.70) likely driven by shared traffic and density factors
-- Pollution is not evenly distributed. Midtown consistently ranks highest, while outer districts rank much lower
-- Both pollutants are trending downward through 2027 based on independent forecasts in both Excel and Python
-
-## What I Would Recommend to a City Planner
-
-- Focus NO2 reduction efforts specifically on winter months, through cleaner heating incentives, traffic restrictions on high pollution days, and real time air quality alerts
-- Since NO2 and PM2.5 move together more than expected, traffic reduction policy is likely to improve both pollutants at once, not just one
-- Prioritize future monitoring investment in the districts the data already points to, starting with Midtown
 
 ## Tools and Skills Used
 
-Excel (Power Query, Pivot Tables), Python (Pandas, NumPy, SciPy, Statsmodels, Matplotlib), RapidMiner (Decision Tree, Random Forest, Linear Regression), Power BI (multi page reports, DAX measures, slicers, KPI cards, treemaps), Statistical Hypothesis Testing, Data Cleaning, Time Series Forecasting, Data Storytelling
+Power Query (data cleaning, column splitting, conditional columns, merged queries, decimal and currency formatting, grouping and aggregation), Data Modeling and Star Schema Design, Power BI (DAX, dashboard design), Business Insight Reporting, Data Storytelling
 
 ## Repository Structure
 
 ```
-assets: every chart, dashboard screenshot, and the infographic shown in this README
-reports: all 7 written reports, as PDF
-presentation: the final slide deck and infographic poster
-code: the two Python scripts referenced in Chapter 4
+assets: real chart images from the Power BI dashboard
+reports: the full written analysis and the complete dashboard export, both as PDF
 ```
 
-Note on file formats: the original Excel workbooks, the Power BI file, and the RapidMiner model files are kept in a private archive. Every result they produced is fully documented above through reports, real code, and real screenshots. Nothing in this repository is a mockup.
+Note on file formats: the original Power Query and Power BI working file is kept in a private archive. Every chart and finding it produced is shown here as real output. Nothing in this repository is a mockup.
 
 ---
 ### About the Author
@@ -193,4 +119,4 @@ Note on file formats: the original Excel workbooks, the Power BI file, and the R
 Email: aitharajuvamshi@gmail.com
 GitHub: [github.com/aitharajuvamshi-cell](https://github.com/aitharajuvamshi-cell)
 
-All content in this repository, including analysis, writing, code, and visuals, is original work produced independently for BAN 586. Copyright 2026 Vamshi Aitharaju. All rights reserved.
+Original individual coursework. Copyright 2026 Vamshi Aitharaju. All rights reserved.
